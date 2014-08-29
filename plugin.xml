@@ -1,0 +1,4 @@
+<plugin id="org.dita-community.common.xslt">
+  <!-- Provides common XSLT components usable from any XSLT transform.
+    -->
+</plugin>
