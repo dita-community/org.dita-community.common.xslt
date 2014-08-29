@@ -460,16 +460,12 @@
     <!--
     <xsl:message> + [DEBUG] df:class(): classSpec="<xsl:sequence select="$classSpec"/>", <xsl:sequence select="$elem/@class"/></xsl:message>
     -->
-    <!-- Workaround for bug in MarkLogic 3.x and common user error, where trailing space in class= attribute
-         is dropped.
+      <!-- '\$" in the regex is a workaround for a bug in MarkLogic 3.x and for a common user
+         error, where trailing space in class= attribute is dropped.
       -->
-    <xsl:variable name="result" 
-      select="
-          if (contains($elem/@class, concat(' ', $classSpec, ' ')))
-             then true()
-             else ends-with($elem/@class, concat(' ', $classSpec))
-        " 
-     as="xs:boolean"/>
+    <xsl:variable name="result"
+       select="matches($elem/@class, concat(' ', normalize-space($classSpec), ' |\$'))"
+       as="xs:boolean"/>
     <!--
     <xsl:message> + [DEBUG]   returning <xsl:sequence select="$result"/></xsl:message>
     -->

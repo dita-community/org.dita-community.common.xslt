@@ -5,16 +5,24 @@
   exclude-result-prefixes="xs relpath"
   >
   
-  <!-- Unit tests for the relpath_utils.xsl function library -->
+  <!-- Unit tests for the relpath_utils.xsl function library 
   
-  <xsl:include href="relpath_util.xsl"/>
+       To run this either give it any XML document (such as this XSLT document)
+       as input or specify the template "run-all-tests" all the initial
+       template to run.
+       
+       The test results are written to the primary result document.
+  
+  -->
+  
+  <xsl:include href="../xsl/relpath_util.xsl"/>
   
 <!-- Tests for the relpath_util functions
 -->
   
     
   
-  <xsl:template match="/">
+  <xsl:template match="/" name="run-all-tests">
     <xsl:call-template name="testUnencodeUrl"/>
     <xsl:call-template name="testEncodeUrl"/>
     <xsl:call-template name="testGetAbsolutePath"/>
