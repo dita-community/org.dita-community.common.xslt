@@ -457,18 +457,16 @@
   <xsl:function name="df:class" as="xs:boolean">
     <xsl:param name="elem" as="element()"/>
     <xsl:param name="classSpec" as="xs:string"/>
-    <!--
-    <xsl:message> + [DEBUG] df:class(): classSpec="<xsl:sequence select="$classSpec"/>", <xsl:sequence select="$elem/@class"/></xsl:message>
-    -->
+        
       <!-- '\$" in the regex is a workaround for a bug in MarkLogic 3.x and for a common user
          error, where trailing space in class= attribute is dropped.
       -->
+    <xsl:variable name="normalizedClassSpec" as="xs:string" select="normalize-space($classSpec)"/>
     <xsl:variable name="result"
-       select="matches($elem/@class, concat(' ', normalize-space($classSpec), ' |\$'))"
+       select="matches($elem/@class, 
+                       concat(' ', $normalizedClassSpec, ' | ', $normalizedClassSpec, '$'))"
        as="xs:boolean"/>
-    <!--
-    <xsl:message> + [DEBUG]   returning <xsl:sequence select="$result"/></xsl:message>
-    -->
+    
     <xsl:sequence select="$result"/>
   </xsl:function>
   
