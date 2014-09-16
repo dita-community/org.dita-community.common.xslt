@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0"
-   xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ts="http://tagsmiths.com/dita/functions"
-   exclude-result-prefixes="xs ts">
+   xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+   xmlns:df="http://dita2indesign.org/dita/functions"
+   exclude-result-prefixes="xs df">
 
    <!-- Unit tests for the dita_tidy.xsl function library 
   
@@ -13,6 +14,8 @@
   
   -->
    <xsl:import href="../xsl/dita_tidy.xsl"/>
+   <xsl:import href="../xsl/dita-support-lib.xsl"/>
+   <xsl:import href="../xsl/relpath_util.xsl"/>
    <xsl:output method="xml" indent="yes"/>
 
    <xsl:template name="run-all-tests" match="/">

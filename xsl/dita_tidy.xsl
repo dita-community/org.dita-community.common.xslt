@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/"
+   xmlns:df="http://dita2indesign.org/dita/functions"
+   exclude-result-prefixes="df"
+   version="2.0">
 <!-- This transform takes DITA content and wraps mixed content with the <p>
      element for all elements identified by the ts:isWrapMixed() boolean
      function. The ts:isWrapMixed() function definition is in file
@@ -28,11 +33,6 @@
      
      Author: Bob Thomas, bob.thomas@tagsmiths.com
 -->
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:ts="http://tagsmiths.com/dita/functions"
-   xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/"
-   exclude-result-prefixes="ts"
-   version="2.0">
 
    <!-- currentFile is unused. It could be used with the ant 'xslt' task's
       filenameparameter attribute. -->
@@ -49,8 +49,6 @@
    <xsl:preserve-space elements="pre lines codeblock"/>
 
    <xsl:output method="xml" indent="no"/>
-
-   <xsl:include href="dita_tidy_utils.xsl"/>
 
    <xsl:template name="dita-tidy" match="/">
       <xsl:variable name="rootElement">
@@ -107,7 +105,7 @@
       </xsl:element>
    </xsl:template>
 
-   <xsl:template match="*[ts:isWrapMixed(.)]">
+   <xsl:template match="*[df:isWrapMixed(.)]">
       <xsl:call-template name="wrap-mixed-content"/>
    </xsl:template>
 
@@ -224,7 +222,7 @@
       </xsl:if>
    </xsl:template>
 
-   <xsl:template match="*[ts:isInline(.)]" mode="populate-wrapped-text-buffer">
+   <xsl:template match="*[df:isInline(.)]" mode="populate-wrapped-text-buffer">
       <!-- When the element is an inline, add temporary attribute wrapWithP. -->
       <xsl:element name="{name(.)}">
          <xsl:call-template name="output-attrs"/>

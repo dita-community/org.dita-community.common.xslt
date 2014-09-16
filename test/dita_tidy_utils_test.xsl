@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0"
-   xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ts="http://tagsmiths.com/dita/functions"
-   exclude-result-prefixes="xs ts">
+   xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+   xmlns:df="http://dita2indesign.org/dita/functions"
+   exclude-result-prefixes="xs df">
 
    <!-- Unit tests for the dita_tidy_utils.xsl function library 
   
@@ -12,7 +13,8 @@
        The test results are written to the primary result document.
   
   -->
-   <xsl:include href="../xsl/dita_tidy_utils.xsl"/>
+   <xsl:include href="../xsl/dita-support-lib.xsl"/>
+   <xsl:include href="../xsl/relpath_util.xsl"/>
    <xsl:output method="xml" indent="yes"/>
 
 
@@ -40,17 +42,17 @@
    <xsl:template name="testIsInline">
       <xsl:param name="test-data" required="yes"/>
       <xsl:variable name="tests" as="node()">
-         <testcase name="ts:isInline tests">
-            <test name="ts:isInline 1" pass="{not(ts:isInline($test-data/li))}">not li</test>
-            <test name="ts:isInline 2" pass="{not(ts:isInline($test-data/p))}">not p</test>
-            <test name="ts:isInline 3" pass="{not(ts:isInline($test-data/prereq))}">not prereq</test>
-            <test name="ts:isInline 4" pass="{not(ts:isInline($test-data/section))}">not section</test>
-            <test name="ts:isInline 5" pass="{ts:isInline($test-data/tm)}">tm</test>
-            <test name="ts:isInline 6" pass="{ts:isInline($test-data/uicontrol)}">uicontrol</test>
+         <testcase name="df:isInline tests">
+            <test name="df:isInline 1" pass="{not(df:isInline($test-data/li))}">not li</test>
+            <test name="df:isInline 2" pass="{not(df:isInline($test-data/p))}">not p</test>
+            <test name="df:isInline 3" pass="{not(df:isInline($test-data/prereq))}">not prereq</test>
+            <test name="df:isInline 4" pass="{not(df:isInline($test-data/section))}">not section</test>
+            <test name="df:isInline 5" pass="{df:isInline($test-data/tm)}">tm</test>
+            <test name="df:isInline 6" pass="{df:isInline($test-data/uicontrol)}">uicontrol</test>
          </testcase>
       </xsl:variable>
       <xsl:if test="$tests/test[@pass = 'false']">
-         <failures name="ts:isInline tests">
+         <failures name="df:isInline tests">
             <xsl:apply-templates select="$tests"/>
          </failures>
       </xsl:if>
@@ -60,17 +62,17 @@
    <xsl:template name="testIsWrapMixed">
       <xsl:param name="test-data" required="yes"/>
       <xsl:variable name="tests" as="node()">
-         <testcase name="ts:isWrapMixed tests">
-            <test name="ts:isWrapMixed 1" pass="{ts:isWrapMixed($test-data/li)}">li</test>
-            <test name="ts:isWrapMixed 2" pass="{not(ts:isWrapMixed($test-data/p))}">not p</test>
-            <test name="ts:isWrapMixed 3" pass="{ts:isWrapMixed($test-data/prereq)}">prereq</test>
-            <test name="ts:isWrapMixed 4" pass="{ts:isWrapMixed($test-data/section)}">section</test>
-            <test name="ts:isWrapMixed 5" pass="{not(ts:isWrapMixed($test-data/tm))}">not tm</test>
-            <test name="ts:isWrapMixed 6" pass="{not(ts:isWrapMixed($test-data/uicontrol))}">not uicontrol</test>
+         <testcase name="df:isWrapMixed tests">
+            <test name="df:isWrapMixed 1" pass="{df:isWrapMixed($test-data/li)}">li</test>
+            <test name="df:isWrapMixed 2" pass="{not(df:isWrapMixed($test-data/p))}">not p</test>
+            <test name="df:isWrapMixed 3" pass="{df:isWrapMixed($test-data/prereq)}">prereq</test>
+            <test name="df:isWrapMixed 4" pass="{df:isWrapMixed($test-data/section)}">section</test>
+            <test name="df:isWrapMixed 5" pass="{not(df:isWrapMixed($test-data/tm))}">not tm</test>
+            <test name="df:isWrapMixed 6" pass="{not(df:isWrapMixed($test-data/uicontrol))}">not uicontrol</test>
          </testcase>
       </xsl:variable>
       <xsl:if test="$tests/test[@pass = 'false']">
-         <failures name="ts:isWrapMixed tests">
+         <failures name="df:isWrapMixed tests">
             <xsl:apply-templates select="$tests"/>
          </failures>
       </xsl:if>
