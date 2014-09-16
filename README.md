@@ -16,3 +16,5 @@ Whenever a submodule changes, or whenever you think about it, run this command:
     git submodule foreach git pull
 
 This will get the latest versions of all the submodules.
+
+See the project Wiki pages for details.
