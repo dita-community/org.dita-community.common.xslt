@@ -630,9 +630,12 @@
     
     <xsl:variable name="resultBase" as="xs:string">
       <xsl:choose>
-        <xsl:when test="string($context/@copy-to) != ''">
+        <xsl:when test="string($context/@copy-to) != '' and not(df:inChunk($context))">
           <!-- If copy-to is in effect, then we have to replace the filename part of the
-               base URI with the value specified in the @copy-to attribute.               
+               base URI with the value specified in the @copy-to attribute.  
+               
+               But only if we are not already within a chunk.
+               
             -->
           <xsl:variable name="copyTo" select="$context/@copy-to" as="xs:string"/>
           <xsl:variable name="fullUri" select="string(resolve-uri($copyTo, base-uri($context)))" as="xs:string"/>
@@ -996,6 +999,27 @@
       <xsl:sequence select="$result"/>
    </xsl:function>
 
+    
+  <xsl:function name="df:inChunk" as="xs:boolean">
+    <!-- Returns true if the context topicref is within 
+         the context of a topicref that generates a new content
+         chunk (e.g., chunk="to-content select-branch").
+         
+       -->
+    <xsl:param name="context" as="element()"/>
+    <xsl:variable name="nearestChunkSpecifier" as="element()?"
+      select="$context/ancestor::*[@chunk != ''][1]"
+    />
+    <xsl:variable name="chunkSpec" as="xs:string?"
+      select="$nearestChunkSpecifier/@chunk"
+    />
+    <xsl:variable name="result" as="xs:boolean"
+      select="contains($chunkSpec, 'to-content') and 
+              (contains($chunkSpec, 'select-branch') or 
+               contains($chunkSpec, 'select-document'))"
+    />
+    <xsl:sequence select="$result"/>
+  </xsl:function>
     
   <xsl:template mode="topicref-report" match="*[df:class(., 'map/topicref')]">
     <xsl:text>&#x0a;</xsl:text>
