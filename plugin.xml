@@ -1,4 +1,15 @@
 <plugin id="org.dita-community.common.xslt">
   <!-- Provides common XSLT components usable from any XSLT transform.
     -->
+  
+    <!-- Include the dita-support-lib and relpath_util libraries in all extentions. -->
+    <feature extension="dita.xsl.xhtml"
+      value="xsl/commonXsltExtensionSupport.xsl" 
+      type="file"
+    />
+    <feature extension="dita.xsl.xslfo"
+      value="xsl/commonXsltExtensionSupport.xsl" 
+      type="file"
+    />
+
 </plugin>
