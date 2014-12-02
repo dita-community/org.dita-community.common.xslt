@@ -3,7 +3,8 @@
   xmlns:df="http://dita2indesign.org/dita/functions"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:relpath="http://dita2indesign/functions/relpath"
-  exclude-result-prefixes="relpath df"
+  xmlns:dita-ot="http://dita-ot.sourceforge.net/ns/201007/dita-ot"
+  exclude-result-prefixes="relpath df dita-ot"
   >
   <!-- =====================================================================
        DITA Community: DITA Support Library
@@ -113,10 +114,10 @@
     <xsl:variable name="navTitle">
       <xsl:choose>
         <xsl:when test="$topic/*[df:class(., 'topic/titlealts')]/*[df:class(., 'topic/navtitle')]">
-          <xsl:apply-templates select="$topic/*[df:class(., 'topic/titlealts')]/*[df:class(., 'topic/navtitle')]" mode="text-only"/>
+          <xsl:apply-templates select="$topic/*[df:class(., 'topic/titlealts')]/*[df:class(., 'topic/navtitle')]" mode="dita-ot:text-only"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:apply-templates select="$topic/*[df:class(., 'topic/title')]" mode="text-only"/>
+          <xsl:apply-templates select="$topic/*[df:class(., 'topic/title')]" mode="dita-ot:text-only"/>
         </xsl:otherwise>
       </xsl:choose>          
     </xsl:variable>
@@ -126,57 +127,92 @@
     <xsl:sequence select="$navTitle"/>
   </xsl:function>
   
+  <!-- Return the navigation title for a topicref, applying the DITA-defined
+       rules for getting the navigation title from any referenced topic:
+       
+       - If the topicref addresses a map:
+       
+         - The topicref does not contribute to navigation and there is
+           no navigation title (submap titles are not used in normal output processing).
+           
+       - If the topicref does not address a topic:
+       
+         - Use the topicref's navtitle element or @navtitle attribute (prefer navtitle element)
+         
+         - If the topicref does not specify a navtitle, then there is no navtitle.
+         
+       - If the topicref does address a topic:
+       
+         - If @locktitle is "yes" and there is a navtitle element or @navtitle attribute,
+           then use that as the navititle
+         - Otherwise, use the topic's navigation title, that is, the result of calling
+           getNavigationTitleForTopic() on the referenced topic.
+         
+       The navigation title is returned as a single string.
+    
+    -->
   <xsl:function name="df:getNavtitleForTopicref" as="xs:string">
     <xsl:param name="topicref" as="element()"/>
+    
+    <xsl:variable name="isLockTitle" as="xs:boolean" select="$topicref/@locktitle = ('yes')"/>
+    <xsl:variable name="directNavtitle" as="xs:string" select="df:getDirectNavtitleForTopicref($topicref)"/>
+    
+    <xsl:message> + [DEBUG] df:getNavtitleForTopicref(): topicref="<xsl:sequence select="$topicref"/>"</xsl:message>
+    <xsl:message> + [DEBUG] df:getNavtitleForTopicref(): directNavtitle="<xsl:value-of select="$directNavtitle"/>"</xsl:message>
     <xsl:choose>
-      <xsl:when test="$topicref/@navtitle != ''">
-        <xsl:value-of select="$topicref/@navtitle"/>
+      <!-- No navigation titles for submaps or topicgroups -->
+      <xsl:when test="$topicref/@format = 'ditamap' or df:isTopicGroup($topicref)">
+        <xsl:sequence select="''"/>
       </xsl:when>
-      <xsl:when test="$topicref/@format and not(starts-with(string($topicref/@format), 'dita'))">
-        <!-- FIXME: This is a quick hack. Need to use the best mode for constructing the navtitle. -->
-        <xsl:variable name="text">
-          <xsl:apply-templates select="$topicref/*[df:class(., 'map/topicmeta')]/*[df:class(., 'map/navtitle')]" mode="text-only"/>            
-        </xsl:variable>
-        <xsl:sequence select="normalize-space($text)"/>
+      <!-- Topicheads must have navigation titles -->
+      <xsl:when test="df:isTopicHead($topicref)">        
+        <xsl:sequence select="$directNavtitle"/>
       </xsl:when>
+      <!-- If locktitle is yes and there's a navtitle, use it: -->
+      <xsl:when test="$isLockTitle and not($directNavtitle = '')">
+        <xsl:sequence select="$directNavtitle"/>
+      </xsl:when>
+      <!-- If resource is not a topic, then use the direct topicref: -->
+      <xsl:when test="$topicref/@format and not($topicref/@format = 'dita')">
+        <xsl:sequence select="$directNavtitle"/>
+      </xsl:when>
+      <!-- There must be a topic resource and @locktitle is "no" -->
       <xsl:otherwise>
         <xsl:variable name="targetTopic" select="df:resolveTopicRef($topicref)"/>
         <xsl:if test="$debugBoolean">
         <xsl:message> + [DEBUG] df:getNavtitleForTopicref(): targetTopic is <xsl:sequence select="concat(name($targetTopic), ': ', normalize-space($targetTopic/*[df:class(., 'topic/title')]))"/></xsl:message>
         </xsl:if>
         <xsl:choose>
-          <xsl:when test="$targetTopic/*[df:class(., 'topic/titlealts')]/*[df:class(., 'topic/navtitle')]">
-            <xsl:if test="$debugBoolean">
-            <xsl:message> + [DEBUG] df:getNavtitleForTopicref(): target topic has a titlealts/navtitle element</xsl:message>
-            <xsl:message> +                                           value is: "<xsl:sequence select="normalize-space($targetTopic/*[df:class(., 'topic/titlealts')]/*[df:class(., 'topic/navtitle')])"/>"</xsl:message>
-            </xsl:if>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:if test="$debugBoolean">
-            <xsl:message> + [DEBUG] df:getNavtitleForTopicref(): target topic does not have a titlealts/navtitle element</xsl:message>
-            <xsl:message> +                                    title is: "<xsl:sequence select="normalize-space($targetTopic/*[df:class(., 'topic/title')])"/>"</xsl:message>
-            </xsl:if>
-          </xsl:otherwise>
-        </xsl:choose>
-        <xsl:choose>
           <xsl:when test="$targetTopic">
             <xsl:sequence select="df:getNavtitleForTopic($targetTopic)"/>  
           </xsl:when>
-          <xsl:when test="$topicref/*[df:class(., 'map/topicmeta')]/*[df:class(., 'topic/navtitle')]">
-            <!-- FIXME: This is a quick hack. Need to use the best mode for constructing the navtitle. -->
-            <xsl:variable name="text">
-              <xsl:apply-templates select="$topicref/*[df:class(., 'map/topicmeta')]/*[df:class(., 'topic/navtitle')]" mode="text-only"/>
-            </xsl:variable>
-            <xsl:sequence select="normalize-space($text)"/>
-          </xsl:when>          
           <xsl:otherwise>
-            <xsl:sequence select="'{Failed to get navtitle for topicref}'"/>
+            <!-- Should never get here, but just in case. -->
+            <xsl:sequence select="''"/>
           </xsl:otherwise>
         </xsl:choose>
         
       </xsl:otherwise>
     </xsl:choose>
   </xsl:function>
+  
+  <!-- Get the navigation title directly specified on a topicref, if any.
+    
+       Returns an empty string (rather than an empty sequence) if there
+       is no navigation title.
+    -->
+  <xsl:function name="df:getDirectNavtitleForTopicref" as="xs:string">
+    <xsl:param name="topicref" as="element()"/>
+    
+    <xsl:variable name="text">
+      <xsl:apply-templates select="($topicref/*[df:class(., 'map/topicmeta')]/*[df:class(., 'topic/navtitle')], $topicref/@navtitle)[1]" mode="dita-ot:text-only"/>            
+    </xsl:variable>
+    <xsl:sequence select="normalize-space($text)"/>
+  </xsl:function>
+  
+  <xsl:template mode="dita-ot:text-only" match="@navtitle">
+    <xsl:sequence select="string(.)"/>
+  </xsl:template>
   
   <xsl:function name="df:getDocumentThatContainsRefTarget" as="document-node()?">
     <!-- Resolve a reference to the document that contains the ultimate reference target. --> 
