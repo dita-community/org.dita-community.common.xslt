@@ -157,8 +157,6 @@
     <xsl:variable name="isLockTitle" as="xs:boolean" select="$topicref/@locktitle = ('yes')"/>
     <xsl:variable name="directNavtitle" as="xs:string" select="df:getDirectNavtitleForTopicref($topicref)"/>
     
-    <xsl:message> + [DEBUG] df:getNavtitleForTopicref(): topicref="<xsl:sequence select="$topicref"/>"</xsl:message>
-    <xsl:message> + [DEBUG] df:getNavtitleForTopicref(): directNavtitle="<xsl:value-of select="$directNavtitle"/>"</xsl:message>
     <xsl:choose>
       <!-- No navigation titles for submaps or topicgroups -->
       <xsl:when test="$topicref/@format = 'ditamap' or df:isTopicGroup($topicref)">
