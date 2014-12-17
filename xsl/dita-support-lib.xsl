@@ -918,6 +918,7 @@
                  else translate(concat(normalize-space($context/ancestor::*[df:class(., 'topic/topic')][1]/@id), '_', normalize-space($suffixId)), '-', '_')"
     />
     <xsl:value-of select="$sectionId"/>
+  </xsl:function>
 
   <xsl:function name="df:getContainingTopic" as="element()?">
     <xsl:param name="context" as="element()"/>
