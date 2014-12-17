@@ -910,7 +910,24 @@
 
   <xsl:function name="df:getSectionId" as="xs:string">
     <xsl:param name="context" as="element()"/>
-    <!-- Given an element, return the id that should be used to reference it -->
+    <!-- Given an element, return the id that should be used to reference it.
+      
+         This function is used mostly for getting IDs for sections to be 
+         referenced by generated links (e.g., mini ToCs that need to include
+         sections (even though, per the DITA spec, sections should not be 
+         included in navigation).
+      -->
+    
+    <!-- NOTE: The rules for ID reference as defined in the DITA spec are that
+           when an ID is duplicated within a topic, the first occurence of that
+           ID is the one you get. For DITA 1.3 this is clarified as also applying
+           to this-topic fragment IDs and IDs included via conref.
+
+           Therefore, there's no need to worry about duplicate explicit IDs
+           on sections.
+  -->
+
+
     <xsl:variable name="suffixId" as="xs:string" select="if ($context/@id) then $context/@id else generate-id($context)" />
 
     <xsl:variable name="sectionId" select="if (df:class($context, 'topic/topic'))
