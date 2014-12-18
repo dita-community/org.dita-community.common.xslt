@@ -778,6 +778,15 @@
     <xsl:sequence select="$result"/>
   </xsl:function>
 
+  <!-- Given a (resolved) map, constructs the sequence of references
+       to unique documents (not necessarily unique topics since
+       multiple topics may be chunked into a single document).
+    -->
+  <xsl:function name="df:mapIsChunkToContent" as="xs:boolean">
+    <xsl:param name="map" as="element()"/>
+    <xsl:value-of select="if ($map[contains(@chunk, 'to-content')]) then true() else false()" />
+  </xsl:function>
+
   <xsl:template match="*" priority="-1" mode="used-topics resolve-maprefs ">
     <!-- Copy elements that are unstyled or that do not establish paragraph contexts -->
     <xsl:call-template name="copy-element"/>
@@ -911,13 +920,13 @@
   <xsl:function name="df:getSectionId" as="xs:string">
     <xsl:param name="context" as="element()"/>
     <!-- Given an element, return the id that should be used to reference it.
-      
-         This function is used mostly for getting IDs for sections to be 
+
+         This function is used mostly for getting IDs for sections to be
          referenced by generated links (e.g., mini ToCs that need to include
-         sections (even though, per the DITA spec, sections should not be 
+         sections (even though, per the DITA spec, sections should not be
          included in navigation).
       -->
-    
+
     <!-- NOTE: The rules for ID reference as defined in the DITA spec are that
            when an ID is duplicated within a topic, the first occurence of that
            ID is the one you get. For DITA 1.3 this is clarified as also applying
