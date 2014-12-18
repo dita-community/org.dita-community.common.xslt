@@ -778,6 +778,33 @@
     <xsl:sequence select="$result"/>
   </xsl:function>
 
+   <!-- Given a (resolved) map, constructs the sequence of references
+       to unique documents (not necessarily unique topics since
+       multiple topics may be chunked into a single document).
+    -->
+  <xsl:function name="df:getUniqueTopicrefsFromChunkedMap" as="element()*">
+    <xsl:param name="map" as="element()"/>
+    <xsl:variable name="result" as="element()*">
+      <!-- Exclude resource-only topicrefs and topicrefs
+           subordinate to topicrefs with @chunk='to-content'
+        -->
+      <xsl:for-each-group
+        select="$map//*[df:isTopicRef(.) and
+                        not(@processing-role = 'resource-only')
+                        ]"
+        group-by="base-uri(df:resolveTopicRef(.))"
+        >
+
+        <xsl:if test="false()">
+          <xsl:message> + [DEBUG] topicref: grouping-key="<xsl:sequence select="current-grouping-key()"/>", href="<xsl:sequence select="string(current-group()[1]/@href)"/>"
+          </xsl:message>
+        </xsl:if>
+        <xsl:sequence select="current-group()[1]"/>
+      </xsl:for-each-group>
+    </xsl:variable>
+    <xsl:sequence select="$result"/>
+  </xsl:function>
+
   <!-- Given a (resolved) map, constructs the sequence of references
        to unique documents (not necessarily unique topics since
        multiple topics may be chunked into a single document).
