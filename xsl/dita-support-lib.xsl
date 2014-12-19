@@ -969,7 +969,9 @@
     <!-- NOTE: This matches the base logic for combining topic and element IDs, namely two underscores between them. -->
     <xsl:variable name="sectionId" select="if (df:class($context, 'topic/topic'))
                  then $context/@id
-                 else translate(concat(normalize-space($context/ancestor::*[df:class(., 'topic/topic')][1]/@id), '__', normalize-space($suffixId)), '-', '_')"
+                 else concat(normalize-space($context/ancestor::*[df:class(., 'topic/topic')][1]/@id), 
+                             '__', 
+                             normalize-space($suffixId))"
     />
     <xsl:value-of select="$sectionId"/>
   </xsl:function>
