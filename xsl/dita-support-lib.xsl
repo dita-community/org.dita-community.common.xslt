@@ -944,6 +944,45 @@
     <xsl:sequence select="$resultId"/>
   </xsl:function>
 
+  <xsl:function name="df:getIdForElement" as="xs:string">
+    <xsl:param name="context" as="element()"/>
+
+    <xsl:variable name="id">
+      <xsl:choose>
+        <xsl:when test="$context/@id">
+          <xsl:value-of select="normalize-space($context/@id)" />
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="generate-id($context)" />
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
+    <xsl:choose>
+      <!-- type is topicref -->
+      <xsl:when test="df:class($context, 'map/topicref')">
+        <!--
+          the id in that case is aways the topic ID
+          We might consider adding a random number to prevent conflict
+          in case an id has been used twice.
+        -->
+        <xsl:value-of select="substring-after($context/@href, '#')"/>
+      </xsl:when>
+
+      <!-- type is topic/topic with no ancestors -->
+      <xsl:when test="df:class($context, 'topic/topic')">
+        <xsl:value-of select="$id" />
+      </xsl:when>
+
+       <!-- type is topic/topic with ancestors -->
+      <xsl:otherwise>
+        <xsl:value-of select="concat($context/ancestor::*[contains(@class, 'topic/body ')]/parent::*/@id, '-', $id)"/>
+      </xsl:otherwise>
+
+    </xsl:choose>
+
+  </xsl:function>
+
   <xsl:function name="df:getSectionId" as="xs:string">
     <xsl:param name="context" as="element()"/>
     <!-- Given an element, return the id that should be used to reference it.
