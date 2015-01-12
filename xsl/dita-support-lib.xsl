@@ -159,7 +159,8 @@
 
     <xsl:choose>
       <!-- No navigation titles for submaps or topicgroups -->
-      <xsl:when test="$topicref/@format = 'ditamap' or df:isTopicGroup($topicref)">
+      <xsl:when test="($topicref/@format = 'ditamap' and not($topicref/@scope = ('peer', 'external'))) or 
+                      df:isTopicGroup($topicref)">
         <xsl:sequence select="''"/>
       </xsl:when>
       <!-- Topicheads must have navigation titles -->
