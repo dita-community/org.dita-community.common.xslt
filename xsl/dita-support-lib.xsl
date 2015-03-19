@@ -764,7 +764,7 @@
       <xsl:for-each-group
         select="$map//*[df:isTopicRef(.) and
                         not(@processing-role = 'resource-only') and
-                        not(ancestor::*[contains(@chunk, 'to-content')])
+                        not(df:topicrefIsInChunk(.))
                         ]"
         group-by="base-uri(df:resolveTopicRef(.))"
         >
@@ -776,6 +776,27 @@
         <xsl:sequence select="current-group()[1]"/>
       </xsl:for-each-group>
     </xsl:variable>
+    <xsl:sequence select="$result"/>
+  </xsl:function>
+  
+  <xsl:function name="df:topicrefIsInChunk" as="xs:boolean">
+    <!-- Returns true if the topicref is a direct descendant of a topicref
+         that establishes a to-content chunk and is not itself a to-content
+         chunking topicref.
+      -->
+    <xsl:param name="topicref" as="element()"/>
+    <!-- The only options for chunking are to-content and to-navigation,
+         so if any ancestor specifies to-content for @chunk we are in a chunk
+         unless we start our own chunk. The to-navigation value has no effect
+         on content chunking.
+         
+         Likewise, the various select values have no effect on whether or not
+         the referenced topic is in a chunk (I think).
+      -->
+    <xsl:variable name="result" as="xs:boolean"
+      select="$topicref/ancestor::*[contains(@chunk, 'to-content')] and 
+              not(contains($topicref/@chunk, 'to-content'))"
+    />
     <xsl:sequence select="$result"/>
   </xsl:function>
 
