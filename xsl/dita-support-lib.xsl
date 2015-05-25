@@ -259,6 +259,7 @@
         <xsl:sequence select="()"/>
       </xsl:when>
       <xsl:when test="$context/@scope and not($context/@scope = 'local')">
+        <!-- Don't try to resolve peer- or external-scope topicrefs. -->
         <xsl:if test="$debugBoolean">
           <xsl:message> + [DEBUG] df:resolveTopicRef(): Scope is <xsl:value-of select="$context/@scope"/>, skipping.</xsl:message>
         </xsl:if>
