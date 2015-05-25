@@ -35,7 +35,9 @@
   <xsl:key name="topicsById" match="*[df:class(., 'topic/topic')]" use="@id"/>
 
   <xsl:param name="debug" select="'false'"/>
-  <xsl:variable name="debugBoolean" select="if ($debug = 'true') then true() else false()" as="xs:boolean"/>
+  <xsl:variable name="debugBoolean" 
+    select="matches($debug,'true|1|on|yes', 'i')" as="xs:boolean"
+  />
 
   <!-- List of base types that are inherently blocks. Include %basic.block as
        well as other elements that are also normally or always presented as
