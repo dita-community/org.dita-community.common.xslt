@@ -1186,10 +1186,16 @@
     <xsl:variable name="chunkSpec" as="xs:string?"
       select="$nearestChunkSpecifier/@chunk"
     />
+    <xsl:variable name="chunkTokens" as="xs:string*"
+       select="tokenize($chunkSpec, ' ')"
+    />
+    <!-- If the selection keyword is not specified and to-content
+         is the chunking action then select-branch is implied.
+      -->
     <xsl:variable name="result" as="xs:boolean"
-      select="contains($chunkSpec, 'to-content') and
-              (contains($chunkSpec, 'select-branch') or
-               contains($chunkSpec, 'select-document'))"
+       select="(($chunkTokens = ('to-content')) and
+                (($chunkTokens = ('select-branch', 'select-document')) or
+                 (count($chunkTokens) = 1)))"
     />
     <xsl:sequence select="$result"/>
   </xsl:function>
