@@ -499,6 +499,17 @@
     <xsl:sequence select="df:isInListOfType($context/(ancestor::*[df:isList(.)])[1], $listClass)"/>
   </xsl:function>
 
+  <!-- Return true if the topicref is a normal-role reference to a chunk-root topic -->
+  <xsl:function name="df:isNavigationTopicref" as="xs:boolean">
+    <xsl:param name="context" as="element()"/>
+    <xsl:variable name="result" as="xs:boolean"
+      select="df:isTopicRef($context) and 
+                     not($context/ancestor::*[contains(@chunk, 'to-content')]) and 
+                     not($context/@processing-role = 'resource-only')"
+    />
+    <xsl:sequence select="$result"></xsl:sequence>
+  </xsl:function>
+
   <xsl:function name="df:class" as="xs:boolean">
     <xsl:param name="elem" as="element()"/>
     <xsl:param name="classSpec" as="xs:string"/>
