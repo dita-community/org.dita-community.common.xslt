@@ -628,6 +628,9 @@
     </xsl:choose>
   </xsl:function>
   
+  <!-- Convert an operating-system-specific path to
+       a URL.
+    -->
   <xsl:function name="relpath:toUrl" as="xs:string">
     <xsl:param name="filepath" as="xs:string"/>
     <xsl:variable name="url" as="xs:string"
@@ -636,14 +639,26 @@
        else $filepath
       "
     />
+    <!-- If the URL use a Windows path or a Unix path,
+         append "file:/" otherwise use it as is.
+      -->
     <xsl:variable name="fileUrl" as="xs:string"
       select="
       if (matches($url, '^[a-zA-Z]:'))
         then concat('file:/', $url)
-        else $url
+        else if (starts-with($url, '/')) 
+                then concat('file:', $url) 
+                else $url
         "
     />
-    <xsl:sequence select="$fileUrl"/>
+    <!-- Escape any spaces in the URL. This is 
+         not complete but should be sufficient to
+         handle all Unix cases and most Windows cases.
+      -->
+    <xsl:variable name="escapedUrl" 
+      select="replace($fileUrl, ' ', '%20')"
+    />
+    <xsl:sequence select="$escapedUrl"/>
   </xsl:function>
   
   <xsl:function name="relpath:toFile" as="xs:string">
