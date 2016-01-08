@@ -427,11 +427,14 @@
         <xsl:sequence select="()"/>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:variable name="topicId" as="xs:string"
-          select="if (contains($fragmentId, '/'))
-          then substring-before($fragmentId, '/')
-          else $fragmentId"
+        <xsl:variable name="topicIdBase" as="xs:string"
+          select="tokenize($fragmentId, '/')[1]"
         />
+        <xsl:variable name="topicId" as="xs:string"
+          select="if ($topicIdBase = '.')
+          then $context/ancestor-or-self::*[df:class(., 'topic/topic')][1]/@id
+          else $topicIdBase"
+        />        
         <xsl:variable name="elemId" as="xs:string"
           select="substring-after($fragmentId, '/')"
         />
