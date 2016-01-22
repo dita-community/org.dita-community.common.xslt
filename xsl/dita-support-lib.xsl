@@ -11,7 +11,7 @@
 
     Copyright (c) 2008, 2011 DITA2InDesign Project
     Copyright (c) 2011, 2014 DITA for Publishers
-    Copyright (c) 2014 DITA Community Project
+    Copyright (c) 2014, 2016 DITA Community Project
 
     NOTE: This module depends on the companion relpath_util XSLT module,
           part of the same Open Toolkit plugin.
@@ -399,21 +399,38 @@
     </xsl:choose>
 
   </xsl:function>
+  
+  <xsl:function name="df:resolveTopicElementRef">
+    <!-- Resolves an href to an element within a topic. -->
+    <xsl:param name="context" as="element()"/><!-- Referencing element -->
+    <xsl:param name="uri" as="xs:string"/><!-- The URI to be resolved -->
+    <xsl:sequence select="df:resolveTopicElementRef($context, $uri, false())"/>
+  </xsl:function>
 
   <xsl:function name="df:resolveTopicElementRef">
     <!-- Resolves an href to an element within a topic. -->
     <xsl:param name="context" as="element()"/><!-- Referencing element -->
     <xsl:param name="uri" as="xs:string"/><!-- The URI to be resolved -->
+    <xsl:param name="doDebug" as="xs:boolean"/><!-- Turn debugging on or off -->
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] df:resolveTopicElementRef(): uri="<xsl:value-of select="$uri"/>"</xsl:message>
+    </xsl:if>
+
     <xsl:variable name="resourcePart"
       select="if (contains($uri, '#'))
         then substring-before($uri, '#')
         else $uri
         "/>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] df:resolveTopicElementRef(): resourcePart="<xsl:value-of select="$resourcePart"/>"</xsl:message>
+    </xsl:if>
     <xsl:variable name="fragmentId"
-      select="if (contains($uri, '#'))
-      then substring-after($uri, '#')
-      else $uri
+      select="relpath:getFragmentId($uri)
       "/>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] df:resolveTopicElementRef(): fragmentId="<xsl:value-of select="$fragmentId"/>"</xsl:message>
+    </xsl:if>
     <xsl:variable name="containingDoc"
       as="document-node()?"
       select="if ($resourcePart = '')
@@ -421,12 +438,24 @@
       else document($resourcePart, $context)
       "
     />
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] df:resolveTopicElementRef(): got containingDoc="<xsl:value-of select="boolean($containingDoc)"/>"</xsl:message>
+    </xsl:if>
     <xsl:choose>
       <xsl:when test="not($containingDoc)">
-        <xsl:message> - [ERROR] Failed to resolve URI "<xsl:sequence select="$uri"/>" to a topic.</xsl:message>
+        <xsl:message> - [ERROR] df:resolveTopicElementRef(): Failed to resolve URI "<xsl:sequence select="$uri"/>" to a topic.</xsl:message>
         <xsl:sequence select="()"/>
       </xsl:when>
+      <xsl:when test="not($fragmentId) or $fragmentId = ''">
+        <xsl:if test="$doDebug">
+          <xsl:message> + [DEBUG] df:resolveTopicElementRef(): No fragment ID, resolving URI to target topic...</xsl:message>
+        </xsl:if>
+        <xsl:sequence select="df:resolveTopicUri($context, $uri)"/>
+      </xsl:when>
       <xsl:otherwise>
+        <xsl:if test="$doDebug">
+          <xsl:message> + [DEBUG] df:resolveTopicElementRef(): Got containing doc, have a fragment ID, attempting to resolve ref to element, if any.</xsl:message>
+        </xsl:if>
         <xsl:variable name="topicIdBase" as="xs:string"
           select="tokenize($fragmentId, '/')[1]"
         />
@@ -466,7 +495,7 @@
             </xsl:choose>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:message> - [ERROR] Failed to resolve URI "<xsl:sequence select="$uri"/>" to a topic.</xsl:message>
+            <xsl:message> - [ERROR] df:resolveTopicElementRef(): Failed to resolve URI "<xsl:sequence select="$uri"/>" to a topic.</xsl:message>
             <xsl:sequence select="()"/>
           </xsl:otherwise>
         </xsl:choose>
