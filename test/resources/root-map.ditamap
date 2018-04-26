@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
+<map>
+    <title>Root Map</title>
+  <topicgroup>
+    <keydef keys="image-01" href="graphics/image-01.jpg" format="jpg">
+      <topicmeta>
+        <linktext>Gandalf the Wizard as played by Ian McKellen</linktext>
+      </topicmeta>
+    </keydef>
+    <keydef keys="site-w3c" href="http://w3c.org" format="html" scope="external"/>
+  </topicgroup>
+  <topicref href="topics/topic-01.dita">
+    <topicref href="topics/topic-02.dita"/>
+  </topicref>
+  <topicref href="topics/topic-03.dita" chunk="to-content">
+    <topicref href="topics/topic-04.dita"/>
+    <topicref href="topics/topic-05.dita"/>
+  </topicref>
+  <topicref href="topics/topic-03.dita">
+    <topicmeta>
+      <navtitle>Seconduse of topic-03</navtitle>
+    </topicmeta>
+  </topicref>  
+</map>

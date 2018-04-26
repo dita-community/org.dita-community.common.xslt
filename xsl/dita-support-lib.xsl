@@ -11,7 +11,7 @@
 
     Copyright (c) 2008, 2011 DITA2InDesign Project
     Copyright (c) 2011, 2014 DITA for Publishers
-    Copyright (c) 2014, 2016 DITA Community Project
+    Copyright (c) 2014, 2018 DITA Community Project
 
     NOTE: This module depends on the companion relpath_util XSLT module,
           part of the same Open Toolkit plugin.
@@ -252,7 +252,7 @@
     <xsl:choose>
       <xsl:when test="not(df:class($context, 'map/topicref'))">
         <xsl:message> - [ERROR] df:resolveTopicRef(): context element is not of class 'map/topicref', class is <xsl:sequence select="$context/@class"/></xsl:message>
-        <xsl:sequence select="$context/ancestor::node()[last()]/.."/>
+        <xsl:sequence select="()"/>
       </xsl:when>
       <xsl:when test="$context/@format and not($context/@format = 'dita') and not($context/@format = 'ditamap')">
         <xsl:if test="$debugBoolean">
@@ -288,7 +288,7 @@
             <xsl:if test="$debugBoolean">
             <xsl:message> + [DEBUG] df:resolveTopicRef(): topicUri is '', return empty list.</xsl:message>
             </xsl:if>
-            <xsl:sequence select="$context/ancestor::node()[last()]/.."/>
+            <xsl:sequence select="()"/>
           </xsl:when>
           <xsl:otherwise>
             <xsl:if test="$debugBoolean">
@@ -306,7 +306,7 @@
                 <xsl:if test="$debugBoolean">
                   <xsl:message> + [DEBUG] df:resolveTopicRef(): document at uri "<xsl:sequence select="resolve-uri($topicUri, base-uri($context))"/>" is not available, returning empty list</xsl:message>
                 </xsl:if>
-                <xsl:sequence select="$context/ancestor::node()[last()]/.."/>
+                <xsl:sequence select="()"/>
               </xsl:otherwise>
             </xsl:choose>
           </xsl:otherwise>
@@ -1243,7 +1243,7 @@
     <xsl:sequence select="$result"/>
   </xsl:function>
 
-  <xsl:template mode="topicref-report" match="*[df:class(., 'map/topicref')]">
+  <xsl:template mode="topicref-report" match="*[contains(@class, ' map/topicref ')]">
     <xsl:text>&#x0a;</xsl:text>
     <xsl:copy copy-namespaces="no">
       <xsl:sequence select="@href | @chunk | @navtitle"/>
