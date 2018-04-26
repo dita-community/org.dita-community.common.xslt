@@ -542,6 +542,13 @@
     <xsl:sequence select="$result"></xsl:sequence>
   </xsl:function>
 
+  <!-- NOTE: This function is deprecated as it breaks Saxon's ability
+             to optimize DITA-style predicates that match on @class
+             values.
+             
+             MarkLogic fixed the bug mentioned below in ML 4 so that is no longer
+             a concern.
+    -->
   <xsl:function name="df:class" as="xs:boolean">
     <xsl:param name="elem" as="element()"/>
     <xsl:param name="classSpec" as="xs:string"/>

@@ -7,6 +7,13 @@
   <xsl:import href="../xsl/relpath_util.xsl"/>
   <xsl:import href="../xsl/dita-support-lib.xsl"/>
   <xsl:import href="../xsl/calculate_map_bos.xsl"/>
+  <!-- Test harness to exercise the calculate-map-bos() function.
+    
+       Apply it to any DITA map.
+       
+       The result is an XML BOS report.
+       
+    -->
   
   <xsl:output
     indent="yes"
