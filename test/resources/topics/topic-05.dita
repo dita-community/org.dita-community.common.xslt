@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic-01">
+    <title>Topic 05</title>
+    <body>
+        <p>This is topic 05.</p>
+    <fig id="fig_mx1_my1_qdb">
+      <title>Image 01</title>
+      <image placement="break" keyref="image-01" align="center" id="image_i2k_4y1_qdb"/>
+    </fig>
+    </body>
+</topic>
