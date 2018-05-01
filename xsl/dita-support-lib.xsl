@@ -542,6 +542,12 @@
     <xsl:sequence select="$result"></xsl:sequence>
   </xsl:function>
 
+  <!-- This function is now obsolete and should be replaced with normal
+       contains(@class, ' foo/bar ') checks.
+       
+       Use of this function bypasses Saxon's ability to optimize handling
+       of checks for tokens in attribute values.
+    -->
   <xsl:function name="df:class" as="xs:boolean">
     <xsl:param name="elem" as="element()"/>
     <xsl:param name="classSpec" as="xs:string"/>
