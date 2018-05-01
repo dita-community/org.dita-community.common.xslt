@@ -252,7 +252,7 @@
     <xsl:choose>
       <xsl:when test="not(df:class($context, 'map/topicref'))">
         <xsl:message> - [ERROR] df:resolveTopicRef(): context element is not of class 'map/topicref', class is <xsl:sequence select="$context/@class"/></xsl:message>
-        <xsl:sequence select="/.."/>
+        <xsl:sequence select="()"/>
       </xsl:when>
       <xsl:when test="$context/@format and not($context/@format = 'dita') and not($context/@format = 'ditamap')">
         <xsl:if test="$debugBoolean">
@@ -288,7 +288,7 @@
             <xsl:if test="$debugBoolean">
             <xsl:message> + [DEBUG] df:resolveTopicRef(): topicUri is '', return empty list.</xsl:message>
             </xsl:if>
-            <xsl:sequence select="/.."/>
+            <xsl:sequence select="()"/>
           </xsl:when>
           <xsl:otherwise>
             <xsl:if test="$debugBoolean">
@@ -306,7 +306,7 @@
                 <xsl:if test="$debugBoolean">
                   <xsl:message> + [DEBUG] df:resolveTopicRef(): document at uri "<xsl:sequence select="resolve-uri($topicUri, base-uri($context))"/>" is not available, returning empty list</xsl:message>
                 </xsl:if>
-                <xsl:sequence select="/.."/>
+                <xsl:sequence select="()"/>
               </xsl:otherwise>
             </xsl:choose>
           </xsl:otherwise>
@@ -366,7 +366,7 @@
           </xsl:when>
           <xsl:otherwise>
             <xsl:message> - [WARNING] Document "<xsl:sequence select="$topicUri"/>" not a topic or map or does not contain a topic as its first child.</xsl:message>
-            <xsl:sequence select="/.."/>
+            <xsl:sequence select="()"/>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:when>
@@ -379,7 +379,7 @@
         <xsl:choose>
           <xsl:when test="count($topicsWithId) = 0">
             <xsl:message> - [ERROR] df:resolveTopicUri(): Failed to find topic with fragment identifier "<xsl:sequence select="$topicFragId"/>" in topic document "<xsl:sequence select="base-uri($topicDoc)"/>"</xsl:message>
-            <xsl:sequence select="/.."/>
+            <xsl:sequence select="()"/>
           </xsl:when>
           <xsl:when test="count($topicsWithId) > 1">
             <xsl:message> - [WARNING] df:resolveTopicUri(): found multiple topics with fragment identifier "<xsl:sequence select="$topicFragId"/>", using first one found.</xsl:message>
