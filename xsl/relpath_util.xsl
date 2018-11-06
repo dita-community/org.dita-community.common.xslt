@@ -91,6 +91,13 @@
     />
   </xsl:function>
   
+  <xd:doc xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl">
+    <xd:desc>
+      <xd:p>Unecodes an encoded URI string encoded in UTF-8 encoding.</xd:p>
+    </xd:desc>
+    <xd:param name="inString"></xd:param>
+    <xd:return></xd:return>
+  </xd:doc>
   <xsl:function name="relpath:unencodeString" as="xs:string">
     <xsl:param name="inString" as="xs:string"/>
     <xsl:variable name="tokens" as="xs:string*">
