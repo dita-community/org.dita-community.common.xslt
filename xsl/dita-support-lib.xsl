@@ -694,6 +694,18 @@
 
   <xsl:function name="df:getEffectiveTopicUri">
     <xsl:param name="context" as="element()"/>
+    <xsl:variable name="root" as="node()" select="root($context)"/>
+    <xsl:variable name="rootMap" as="element()"
+      select="
+        if ($root instance of document-node())
+        then $root/*
+        else $root
+      "
+    />
+    <xsl:sequence
+      select="df:getEffectiveTopicUri($rootMap, $context)"
+    />
+    
     <xsl:sequence
       select="df:getEffectiveTopicUri(root($context)/*, $context)"/>
   </xsl:function>
@@ -892,7 +904,7 @@
     -->
   <xsl:function name="df:mapIsChunkToContent" as="xs:boolean">
     <xsl:param name="map" as="element()"/>
-    <xsl:value-of select="if ($map[contains(@chunk, 'to-content')]) then true() else false()" />
+    <xsl:sequence select="if ($map[contains(@chunk, 'to-content')]) then true() else false()" />
   </xsl:function>
 
   <xsl:template match="*" priority="-1" mode="used-topics resolve-maprefs ">
