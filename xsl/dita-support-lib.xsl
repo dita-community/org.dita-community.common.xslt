@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0"
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
   xmlns:df="http://dita2indesign.org/dita/functions"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:relpath="http://dita2indesign/functions/relpath"
   xmlns:dita-ot="http://dita-ot.sourceforge.net/ns/201007/dita-ot"
   exclude-result-prefixes="relpath df dita-ot"
+  expand-text="yes"
+  version="3.0"
   >
   <!-- =====================================================================
        DITA Community: DITA Support Library
 
     Copyright (c) 2008, 2011 DITA2InDesign Project
     Copyright (c) 2011, 2014 DITA for Publishers
-    Copyright (c) 2014, 2016 DITA Community Project
+    Copyright (c) 2014, 2019 DITA Community Project
 
     NOTE: This module depends on the companion relpath_util XSLT module,
           part of the same Open Toolkit plugin.
@@ -30,7 +32,6 @@
   <xsl:import href="relpath_util.xsl"/>
 
 -->
-
 
   <xsl:key name="topicsById" match="*[df:class(., 'topic/topic')]" use="@id"/>
 
@@ -265,19 +266,19 @@
     </xsl:if>
     <xsl:choose>
       <xsl:when test="not(df:class($context, 'map/topicref'))">
-        <xsl:message> - [ERROR] df:resolveTopicRef(): context element is not of class 'map/topicref', class is <xsl:sequence select="$context/@class"/></xsl:message>
+        <xsl:message> - [ERROR] df:resolveTopicRef(): context element is not of class 'map/topicref', class is {$context/@class}</xsl:message>
         <xsl:sequence select="()"/>
       </xsl:when>
       <xsl:when test="$context/@format and not($context/@format = 'dita') and not($context/@format = 'ditamap')">
         <xsl:if test="$doDebug">
-          <xsl:message>+ [DEBUG] df:resolveTopicRef(): Format is <xsl:value-of select="$context/@format"/>, skipping.</xsl:message>
+          <xsl:message>+ [DEBUG] df:resolveTopicRef(): Format is {$context/@format}, skipping.</xsl:message>
         </xsl:if>
         <xsl:sequence select="()"/>
       </xsl:when>
       <xsl:when test="$context/@scope and not($context/@scope = 'local')">
         <!-- Don't try to resolve peer- or external-scope topicrefs. -->
         <xsl:if test="$doDebug">
-          <xsl:message>+ [DEBUG] df:resolveTopicRef(): Scope is <xsl:value-of select="$context/@scope"/>, skipping.</xsl:message>
+          <xsl:message>+ [DEBUG] df:resolveTopicRef(): Scope is {$context/@scope}, skipping.</xsl:message>
         </xsl:if>
         <xsl:sequence select="()"/>
       </xsl:when>
@@ -285,17 +286,17 @@
       <xsl:otherwise>
         <xsl:if test="$doDebug">
           <xsl:message>+ [DEBUG] df:resolveTopicRef(): context is a topicref.</xsl:message>
-          <xsl:message>+ [DEBUG] df:resolveTopicRef(): href="<xsl:value-of select="$context/@href"/>"</xsl:message>
+          <xsl:message>+ [DEBUG] df:resolveTopicRef(): href="{$context/@href}"</xsl:message>
         </xsl:if>
         <xsl:variable name="topicUri" as="xs:string"
           select="df:getEffectiveTopicUri((), $context, $doDebug)"/>
         <xsl:if test="$doDebug">
-          <xsl:message>+ [DEBUG] df:resolveTopicRef(): topicUri="<xsl:sequence select="$topicUri"/>"</xsl:message>
+          <xsl:message>+ [DEBUG] df:resolveTopicRef(): topicUri="{$topicUri}"</xsl:message>
         </xsl:if>
         <xsl:variable name="topicFragId" as="xs:string"
            select="if (contains($context/@href, '#')) then substring-after($context/@href, '#') else ''"/>
         <xsl:if test="$doDebug">
-          <xsl:message>+ [DEBUG] df:resolveTopicRef(): topicFragId="<xsl:sequence select="$topicFragId"/>"</xsl:message>
+          <xsl:message>+ [DEBUG] df:resolveTopicRef(): topicFragId="{$topicFragId}"</xsl:message>
         </xsl:if>
         <xsl:choose>
           <xsl:when test="$topicUri = '' and $topicFragId = ''">
@@ -309,8 +310,7 @@
             <xsl:message>+ [DEBUG] df:resolveTopicRef(): topicUri is a string, trying to resolve...</xsl:message>
             </xsl:if>
             <xsl:choose>
-              <xsl:when test="true()"><!-- doc-available does not appear to be reliable function -->
-<!--                <xsl:when test="doc-available(resolve-uri($topicUri, base-uri($context)))">-->
+              <xsl:when test="doc-available(resolve-uri($topicUri, base-uri($context)))">
                 <xsl:if test="$doDebug">
                   <xsl:message>+ [DEBUG] df:resolveTopicRef(): target document is available.</xsl:message>
                 </xsl:if>
@@ -318,7 +318,7 @@
               </xsl:when>
               <xsl:otherwise>
                 <xsl:if test="$doDebug">
-                  <xsl:message>+ [DEBUG] df:resolveTopicRef(): document at uri "<xsl:sequence select="resolve-uri($topicUri, base-uri($context))"/>" is not available, returning empty list</xsl:message>
+                  <xsl:message>+ [DEBUG] df:resolveTopicRef(): document at uri "{resolve-uri($topicUri, base-uri($context))}" is not available, returning empty list</xsl:message>
                 </xsl:if>
                 <xsl:sequence select="()"/>
               </xsl:otherwise>
@@ -328,14 +328,23 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:function>
+  
+  <xsl:function name="df:resolveTopicUri" as="element()?">
+    <!-- Resolves a URI reference to a topic. -->
+    <xsl:param name="context" as="element()"/>
+    <xsl:param name="topicUri" as="xs:string"/>
+    <xsl:sequence select="df:resolveTopicUri($context, $topicUri, $debugBoolean)"/>
+  </xsl:function>
 
   <xsl:function name="df:resolveTopicUri" as="element()?">
     <!-- Resolves a URI reference to a topic. -->
     <xsl:param name="context" as="element()"/>
     <xsl:param name="topicUri" as="xs:string"/>
+    <xsl:param name="debug" as="xs:boolean"/>
 
-    <xsl:if test="$debugBoolean">
+    <xsl:if test="$debug">
       <xsl:message>+ [DEBUG] df:resolveTopicUri(): topicUri: <xsl:sequence select="$topicUri"/></xsl:message>
+      <xsl:message>+ [DEBUG] df:resolveTopicUri(): context baseUri: "<xsl:sequence select="base-uri($context)"/>"</xsl:message>
     </xsl:if>
 
     <xsl:variable name="topicResourcePart" as="xs:string"
@@ -347,33 +356,33 @@
       select="if ($topicResourcePart != '')
       then document($topicResourcePart, $context)
       else root($context)"/>
-    <xsl:if test="$debugBoolean">
+    <xsl:if test="$debug">
       <xsl:message>+ [DEBUG] df:resolveTopicUri(): target document resolved: <xsl:sequence select="count($topicDoc) > 0"/></xsl:message>
     </xsl:if>
     <xsl:choose>
       <xsl:when test="$topicFragId = ''">
-        <xsl:if test="$debugBoolean">
+        <xsl:if test="$debug">
           <xsl:message>+ [DEBUG] df:resolveTopicUri(): No explicit fragment identifier, select first topic in document in document order</xsl:message>
         </xsl:if>
         <!-- No explicit fragment identifier, select first topic in document in document order -->
         <xsl:choose>
           <xsl:when test="$topicDoc/*[df:class(., 'topic/topic')]">
-            <xsl:if test="$debugBoolean">
+            <xsl:if test="$debug">
               <xsl:message>+ [DEBUG] df:resolveTopicUri(): root of topicDoc is a topic, returning root element.</xsl:message>
             </xsl:if>
             <xsl:sequence select="$topicDoc/*[1]"/>
           </xsl:when>
           <xsl:when test="$topicDoc/*/*[df:class(., 'topic/topic')]">
-            <xsl:if test="$debugBoolean">
+            <xsl:if test="$debug">
               <xsl:message>+ [DEBUG] df:resolveTopicUri(): child root of topicDoc is a topic, returning first child topic.</xsl:message>
             </xsl:if>
             <xsl:sequence select="$topicDoc/*/*[df:class(., 'topic/topic')][1]"/>
-            <xsl:if test="$debugBoolean">
+            <xsl:if test="$debug">
               <xsl:message>+ [INFO] Using first child topic <xsl:sequence select="string($topicDoc/*/*[df:class(., 'topic/topic')][1]/@id)"/> of document "<xsl:sequence select="$topicUri"/>".</xsl:message>
             </xsl:if>
           </xsl:when>
           <xsl:when test="$topicDoc/*[df:class(., 'map/map')]">
-            <xsl:if test="$debugBoolean">
+            <xsl:if test="$debug">
               <xsl:message>+ [DEBUG] df:resolveTopicUri(): root of topicDoc is a map, returning root element.</xsl:message>
             </xsl:if>
             <xsl:sequence select="$topicDoc/*[1]"/>
@@ -384,9 +393,13 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:when>
+      <xsl:when test="empty($topicDoc)">
+        <xsl:message> - [WARNING] Failed to resolve URI "<xsl:sequence select="$topicUri"/>" to a topic</xsl:message>
+        <xsl:sequence select="()"/>        
+      </xsl:when>
       <xsl:otherwise>
-        <!-- Explicit fragment ID, try to resolve it -->
-        <xsl:if test="$debugBoolean">
+        <!-- Explicit fragment ID, try to resolve it -->        
+        <xsl:if test="$debug">
           <xsl:message>+ [DEBUG] df:resolveTopicUri(): Explicit fragment identifier, resolving it.</xsl:message>
         </xsl:if>
         <xsl:variable name="topicsWithId" select="key('topicsById', $topicFragId, $topicDoc)"/>
@@ -401,7 +414,7 @@
           </xsl:when>
           <xsl:otherwise>
             <xsl:variable name="resultTopic" as="element()" select="$topicsWithId[1]"/>
-            <xsl:if test="$debugBoolean">
+            <xsl:if test="$debug">
               <xsl:message>+ [DEBUG] df:resolveTopicUri(): fragment identifier addressed topic:
 <xsl:sequence select="$resultTopic"/>
 </xsl:message>
@@ -414,18 +427,29 @@
 
   </xsl:function>
   
+  <!--
+    Resolves an href to an element within a topic.
+    @param context The element to resolve the href relative to
+    @param uri The URI to be resolved.
+    @return Target element, if found, or empty sequence.
+    --> 
   <xsl:function name="df:resolveTopicElementRef">
-    <!-- Resolves an href to an element within a topic. -->
-    <xsl:param name="context" as="element()"/><!-- Referencing element -->
-    <xsl:param name="uri" as="xs:string"/><!-- The URI to be resolved -->
+    <xsl:param name="context" as="element()"/>
+    <xsl:param name="uri" as="xs:string"/>
     <xsl:sequence select="df:resolveTopicElementRef($context, $uri, false())"/>
   </xsl:function>
 
-  <xsl:function name="df:resolveTopicElementRef">
-    <!-- Resolves an href to an element within a topic. -->
-    <xsl:param name="context" as="element()"/><!-- Referencing element -->
-    <xsl:param name="uri" as="xs:string"/><!-- The URI to be resolved -->
-    <xsl:param name="doDebug" as="xs:boolean"/><!-- Turn debugging on or off -->
+  <!--
+    Resolves an href to an element within a topic.
+    @param context The element to resolve the href relative to
+    @param uri The URI to be resolved.
+    @param doDebug Turns debugging on or off
+    @return Target element, if found, or empty sequence.
+    -->
+  <xsl:function name="df:resolveTopicElementRef" as="element()?">
+    <xsl:param name="context" as="element()"/>
+    <xsl:param name="uri" as="xs:string"/>
+    <xsl:param name="doDebug" as="xs:boolean"/>
     
     <xsl:if test="$doDebug">
       <xsl:message>+ [DEBUG] df:resolveTopicElementRef(): uri="<xsl:value-of select="$uri"/>"</xsl:message>
@@ -724,7 +748,8 @@
   
   <!-- Returns true if the topicref points to something and is a normal-role topicref 
        @param context the element to check .
-       @return true if the element is a topicref that points to something and has a @format of 'dita'.
+       @return true if the element is a topicref that points to something and has a @format of 'dita' and
+       has a processing role of "normal"
   -->
   <xsl:function name="df:isTopicRefToTopic" as="xs:boolean">
     <xsl:param name="context" as="element()"/>
@@ -732,8 +757,11 @@
     
     <xsl:variable name="result">
       <xsl:choose>
-        <xsl:when test="df:isTopicRef($context)">
-          <xsl:sequence select="empty($context/@format) or $context/@format eq 'dita'"/>
+        <xsl:when test="df:isNormalRoleTopicRef($context)">
+          <xsl:sequence 
+            select="
+             (empty($context/@format) or $context/@format eq 'dita')
+            "/>
         </xsl:when>
         <xsl:otherwise>
           <xsl:sequence select="false()"/>
@@ -742,13 +770,11 @@
     </xsl:variable>
     
     <xsl:if test="false()">
-      <xsl:message>+ [DEBUG]   isNormalRoleTopicRef(): returning=<xsl:sequence select="$result"/></xsl:message>
+      <xsl:message>+ [DEBUG]   isTopicRefToTopic(): returning=<xsl:sequence select="$result"/></xsl:message>
     </xsl:if>
     
     <xsl:sequence select="$result"/>
-  </xsl:function>
-  
-  
+  </xsl:function>  
   
   <xsl:function name="df:getBaseClass" as="xs:string">
     <!-- Gets the base class name of the context element, e.g. "topic/p" -->
