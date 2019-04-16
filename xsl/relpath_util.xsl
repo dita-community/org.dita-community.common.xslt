@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0"
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:relpath="http://dita2indesign/functions/relpath"
   xmlns:local="urn:localfunctions"
   exclude-result-prefixes="relpath xs local"  
+  expand-text="yes"
   >
   <!-- =====================================================================
        DITA Community: Relative Path XSLT Functions
@@ -78,16 +79,11 @@
   <xsl:function name="relpath:unencodeUri" as="xs:string">
     <xsl:param name="inUriString" as="xs:string"/>
     <xsl:variable name="firstChar" select="substring($inUriString, 1, 1)" as="xs:string"/>
-    <xsl:variable name="outUriString" as="xs:string*">
-      <xsl:for-each select="tokenize($inUriString, '/')">
-        <xsl:variable name="pathComponent" select="." as="xs:string"/>
-        <xsl:variable name="unencodedComponent" select="relpath:unencodeString(.)" as="xs:string"/>
-        <xsl:sequence select="$unencodedComponent"/>
-      </xsl:for-each>
-    </xsl:variable>
-    <xsl:variable name="pathComponentsJoined" select="string-join($outUriString, '/')"/>
+    <xsl:variable name="result" as="xs:string*"
+      select="tokenize($inUriString, '/') ! relpath:unencodeString(.) => string-join('/')"
+    />
     <xsl:sequence
-      select="$pathComponentsJoined"
+      select="$result"
     />
   </xsl:function>
   
@@ -111,10 +107,10 @@
       </xsl:analyze-string>
     </xsl:variable>
 <!--    <xsl:message> + [DEBUG] unencodeString(): tokens=<xsl:sequence select="string-join($tokens, '|')"/></xsl:message>-->
-    <xsl:variable name="resultTokens" as="xs:string*"
-      select="relpath:unencodeStringTokens($tokens, ())"
+    <xsl:variable name="result" as="xs:string"
+      select="relpath:unencodeStringTokens($tokens, ()) => string-join('')"
     />
-    <xsl:sequence select="string-join($resultTokens, '')"/>
+    <xsl:sequence select="$result"/>
   </xsl:function>
   
   <xsl:function name="relpath:unencodeStringTokens" as="xs:string*">
@@ -169,7 +165,7 @@
         <xsl:otherwise>
           <xsl:sequence select="1"/>
         </xsl:otherwise>
-      </xsl:choose>      
+      </xsl:choose>            
     </xsl:variable>
     
     <!-- Take byte1 and mask out leading bits that indicate sequence length -->
@@ -224,7 +220,7 @@
           <!-- Subsequence bytes are 10xxxxxx, so mask out leading bit -->
           <xsl:variable name="bitList" as="xs:integer*"
             select="relpath:getBits($byte - 128)[position() gt 2]"
-          />
+    />    
           <xsl:sequence 
             select="relpath:decodeRemainingUtfBytes($tokens[position() gt 1], ($accumulatedBits, $bitList))"/>
         </xsl:otherwise>
@@ -285,17 +281,17 @@
     <xsl:param name="base" as="xs:integer"/>
     <xsl:param name="exponent" as="xs:integer"/>
     <xsl:param name="accumulatedValue" as="xs:integer"/>
-    <xsl:choose>
-      <xsl:when test="$exponent = 0">
-        <xsl:sequence select="0"/>
-      </xsl:when>
-      <xsl:when test="$exponent = 1">
-        <xsl:sequence select="$accumulatedValue"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:sequence select="local:doExponentiation($base, $exponent - 1, $accumulatedValue * $base)"/>
-      </xsl:otherwise>
-    </xsl:choose>
+    
+    <xsl:variable name="result" as="xs:integer"
+      select="
+      if ($exponent = 0)
+      then 0
+      else if ($exponent = 1)
+      then $accumulatedValue
+      else local:doExponentiation($base, $exponent - 1, $accumulatedValue * $base)
+      "
+    />
+    <xsl:sequence select="$result"/>
   </xsl:function>
   
   <xsl:function name="relpath:shiftLeft" as="xs:integer">
@@ -321,6 +317,7 @@
   <xsl:function name="local:doBits2int" as="xs:integer">
     <xsl:param name="bits" as="xs:integer*"/>
     <xsl:param name="accumulatedValue" as="xs:integer"/>
+    
     <xsl:choose>
       <xsl:when test="count($bits) = 0">
         <xsl:sequence select="$accumulatedValue"/>
@@ -380,11 +377,10 @@
   <xsl:function name="relpath:unescapeUriCharacter" as="xs:string">
     <xsl:param name="escapedCharStr" as="xs:string"/>
     <xsl:variable name="cadr" select="substring($escapedCharStr, 2)"/>
-    <xsl:variable name="resultChar" as="xs:string">
-      <!-- cadr must be pair of hex digits -->
-      <xsl:variable name="codepoint" select="relpath:hex-to-char($cadr)" as="xs:integer"/>
-      <xsl:sequence select="codepoints-to-string($codepoint)"/>
-    </xsl:variable>
+    <!-- cadr must be pair of hex digits -->
+    <xsl:variable name="resultChar" as="xs:string"
+      select="relpath:hex-to-char($cadr) => codepoints-to-string()"
+    />
     <xsl:sequence select="$resultChar"/>
   </xsl:function>
   
@@ -610,15 +606,33 @@
     />
     <xsl:if test="false()">
       <xsl:message> + [DEBUG]: relpath:getRelativePath(): Starting...</xsl:message>
-      <xsl:message> + [DEBUG]:     source="<xsl:value-of select="$effectiveSource"/>"</xsl:message>
-      <xsl:message> + [DEBUG]:     target="<xsl:value-of select="$target"/>"</xsl:message>
+      <xsl:message> + [DEBUG]:     source="{$effectiveSource}"</xsl:message>
+      <xsl:message> + [DEBUG]:     target="{$target}"</xsl:message>
     </xsl:if>
-    <xsl:variable name="sourceTokens" select="tokenize((if (starts-with($effectiveSource, '/')) then substring-after($effectiveSource, '/') else $effectiveSource), '/')" as="xs:string*"/>
-    <xsl:variable name="targetTokens" select="tokenize((if (starts-with($target, '/')) then substring-after($target, '/') else $target), '/')" as="xs:string*"/>
+    <xsl:variable name="sourceTokens" 
+      as="xs:string*"
+      select="
+      tokenize(
+        (if (starts-with($effectiveSource, '/')) 
+         then substring-after($effectiveSource, '/') 
+         else $effectiveSource), 
+        '/')" 
+    />
+    <xsl:variable name="targetTokens" 
+      as="xs:string*"
+      select="
+      tokenize(
+        (if (starts-with($target, '/')) 
+         then substring-after($target, '/') 
+         else $target), 
+        '/')" 
+    />
     <xsl:choose>
       <xsl:when test="(count($sourceTokens) > 0 and count($targetTokens) > 0) and 
                       (($sourceTokens[1] != $targetTokens[1]) and 
-                       (contains($sourceTokens[1], ':') or contains($targetTokens[1], ':')))">
+                       (contains($sourceTokens[1], ':') or 
+                        contains($targetTokens[1], ':')))
+                     ">
         <!-- Must be absolute URLs with different schemes, cannot be relative, return
         target as is. -->
         <xsl:value-of select="$target"/>
@@ -627,7 +641,7 @@
         <xsl:variable name="resultTokens" 
           select="relpath:analyzePathTokens($sourceTokens, $targetTokens, ())" as="xs:string*"/>      
         <xsl:if test="false()">
-          <xsl:message> + [DEBUG] relpath:getRelativePath(): resultTokens="<xsl:sequence select="$resultTokens"/>"</xsl:message>
+          <xsl:message> + [DEBUG] relpath:getRelativePath(): resultTokens="{$resultTokens => string-join(', ')}"</xsl:message>
         </xsl:if>
         <xsl:variable name="result" select="string-join($resultTokens, '/')" as="xs:string"/>
         <xsl:value-of select="$result"/>
@@ -674,8 +688,8 @@
     <xsl:variable name="unescapedUrl" select="relpath:unencodeUri($url)" as="xs:string"/>
     <xsl:if test="false()">      
       <xsl:message> + [DEBUG] -------------</xsl:message>
-      <xsl:message> + [DEBUG] toFile(): url         ='<xsl:sequence select="$url"/>', platform='<xsl:sequence select="$platform"/>'</xsl:message>
-      <xsl:message> + [DEBUG] toFile(): unescapedUrl='<xsl:sequence select="$unescapedUrl"/>', platform='<xsl:sequence select="$platform"/>'</xsl:message>
+      <xsl:message> + [DEBUG] toFile(): url         ='{$url}', platform='{$platform}'</xsl:message>
+      <xsl:message> + [DEBUG] toFile(): unescapedUrl='{$unescapedUrl}', platform='{$platform}'</xsl:message>
     </xsl:if>
     <xsl:variable name="result" as="xs:string"
        select="
@@ -685,7 +699,7 @@
        "
     />
     <xsl:if test="false()">      
-      <xsl:message> + [DEBUG] toFile(): result='<xsl:sequence select="$result"/>'</xsl:message>
+      <xsl:message> + [DEBUG] toFile(): result='{$result}'</xsl:message>
     </xsl:if>
     <xsl:sequence select="$result"/>
   </xsl:function>
@@ -716,13 +730,13 @@
   <xsl:function name="relpath:urlToWindowsFile" as="xs:string">
     <xsl:param name="url" as="xs:string"/>
     <xsl:if test="false()">      
-      <xsl:message> + [DEBUG] urlToWindowsFile(): url='<xsl:sequence select="$url"/>'</xsl:message>
+      <xsl:message> + [DEBUG] urlToWindowsFile(): url='{$url}'</xsl:message>
     </xsl:if>
     <xsl:variable name="basePath" as="xs:string"
        select="relpath:urlToNxFile($url)"
     />
     <xsl:if test="false()">      
-      <xsl:message> + [DEBUG] urlToWindowsFile(): basePath='<xsl:sequence select="$basePath"/>'</xsl:message>
+      <xsl:message> + [DEBUG] urlToWindowsFile(): basePath='{$basePath}'</xsl:message>
     </xsl:if>
     <xsl:variable name="windowsPath" as="xs:string" 
       select="
@@ -732,7 +746,7 @@
       ' ')" 
       />
     <xsl:if test="false()">      
-      <xsl:message> + [DEBUG] urlToWindowsFile(): windowsPath='<xsl:sequence select="$windowsPath"/>'</xsl:message>
+      <xsl:message> + [DEBUG] urlToWindowsFile(): windowsPath='{$windowsPath}'</xsl:message>
     </xsl:if>
     <xsl:variable name="result" as="xs:string">
       <xsl:choose>
@@ -749,7 +763,7 @@
     </xsl:variable>
     
     <xsl:if test="false()">      
-      <xsl:message> + [DEBUG] urlToWindowsFile(): Returning '<xsl:sequence select="$result"/>'</xsl:message>
+      <xsl:message> + [DEBUG] urlToWindowsFile(): Returning '{$result}'</xsl:message>
     </xsl:if>
     <xsl:sequence select="$result"/>
   </xsl:function> 
@@ -762,9 +776,9 @@
     <xsl:param name="resultTokens" as="xs:string*"/>
     <xsl:if test="false()">
     <xsl:message> + DEBUG: relpath:analyzePathTokens(): Starting...</xsl:message>
-    <xsl:message> + DEBUG:     sourceTokens=<xsl:value-of select="string-join($sourceTokens, ',')"/></xsl:message>
-    <xsl:message> + DEBUG:     targetTokens=<xsl:value-of select="string-join($targetTokens, ',')"/></xsl:message>
-    <xsl:message> + DEBUG:     resultTokens=<xsl:value-of select="string-join($resultTokens, ',')"/></xsl:message>
+    <xsl:message> + DEBUG:     sourceTokens={string-join($sourceTokens, ',')}</xsl:message>
+    <xsl:message> + DEBUG:     targetTokens={string-join($targetTokens, ',')}</xsl:message>
+    <xsl:message> + DEBUG:     resultTokens={string-join($resultTokens, ',')}</xsl:message>
     </xsl:if>
     <xsl:choose>
       <xsl:when test="count($sourceTokens) = 0">
@@ -782,7 +796,7 @@
             <!-- Paths must diverge at this point. Append one ".." for each token
             left in the source: -->
             <xsl:if test="false()">
-              <xsl:message> + [DEBUG] constructing goUps: $sourceTokens=<xsl:sequence select="$sourceTokens"/></xsl:message>
+              <xsl:message> + [DEBUG] constructing goUps: $sourceTokens={$sourceTokens => string-join(', ')}</xsl:message>
             </xsl:if>
             <xsl:variable name="goUps" as="xs:string*">
               <xsl:for-each select="$sourceTokens">
@@ -864,20 +878,15 @@
     	<xsl:param name="relativePath" as="xs:string*"/>
     	<xsl:param name="filePath" as="xs:string*"/>
   		
-     	<xsl:variable name="prefix">
-  	    	<xsl:choose>
-  	    		<xsl:when test="substring($filePath, 1, 1) = '/'">
-  	    			<xsl:value-of select="''" />
-  	    		</xsl:when>
-  	    		<xsl:otherwise>
-  	    			<xsl:value-of select="$relativePath" />
-  	    		</xsl:otherwise>
-  	    	    	
-  	    	</xsl:choose>   		
-    	</xsl:variable>
+     	<xsl:variable name="prefix"
+     	  select="
+     	  if (substring($filePath, 1, 1) eq '/')
+     	  then ''
+     	  else $relativePath
+     	  "
+     	/>
     	
-    	<xsl:value-of select="concat($prefix, $filePath)" />
-    	
+    	<xsl:sequence select="concat($prefix, $filePath)" />
     	
   </xsl:function>
   

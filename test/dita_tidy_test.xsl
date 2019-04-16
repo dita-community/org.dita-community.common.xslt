@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0"
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0"
    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
    xmlns:df="http://dita2indesign.org/dita/functions"
-   exclude-result-prefixes="xs df">
+   exclude-result-prefixes="xs df"
+   expand-text="yes"
+   >
 
    <!-- Unit tests for the dita_tidy.xsl function library 
   
@@ -38,19 +40,19 @@
       </xsl:variable>
       <test-results>
          <xsl:call-template name="testMixedContent">
-            <xsl:with-param name="test-data" select="$test-data"/>
+            <xsl:with-param name="test-data" select="$test-data" as="element()"/>
          </xsl:call-template>
       </test-results>
    </xsl:template>
 
    <xsl:template name="testMixedContent">
-      <xsl:param name="test-data" required="yes"/>
+      <xsl:param name="test-data" required="yes" as="element()"/>
       <!--<xsl:apply-templates select="$test-data"/>-->
       <xsl:variable name="processed-test-data">
          <xsl:apply-templates select="$test-data"/>
       </xsl:variable>
 
-      <xsl:variable name="tests" as="node()">
+      <xsl:variable name="tests" as="element()">
          <testcase name="wrapMixed tests">
             <!-- test-data contains three authored <p> elements and three node-sets of contiguous
             text and inlines. When these text-inline node-sets have been wrapped there should

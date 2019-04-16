@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0"
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0"
   xmlns:local="http://www.example.com/functions/local"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:relpath="http://dita2indesign/functions/relpath"
   xmlns:df="http://dita2indesign.org/dita/functions"
   exclude-result-prefixes="local relpath xs df"
+  expand-text="yes"
   >
   
   <!--  ====================================================
@@ -36,7 +37,7 @@
     </xsl:if>
     <xsl:variable name="bosList" select="local:removeDuplicates($baseBosList)"/>
     <xsl:variable name="temp" select="$bosList"/><!-- Force calculation of value before issuing message -->
-    <xsl:message> + INFO: Unique document set calculated. Found <xsl:value-of select="count($baseBosList)"/> references, <xsl:value-of select="count($bosList)"/> unique documents.</xsl:message>
+    <xsl:message> + INFO: Unique document set calculated. Found {count($baseBosList)} references, {count($bosList)} unique documents.</xsl:message>
     <xsl:sequence select="$bosList"/>
   </xsl:function>
   
@@ -81,7 +82,7 @@
     <xsl:param name="debug" as="xs:boolean" tunnel="yes" select="false()"/>
     
     <xsl:if test="$debug">
-      <xsl:message>+ [DEBUG] bos_construction: Handling non-DITA local topicref href="<xsl:value-of select="@href"/>"...</xsl:message>
+      <xsl:message>+ [DEBUG] bos_construction: Handling non-DITA local topicref href="{@href}"...</xsl:message>
     </xsl:if>
     
     <xsl:variable name="baseUri" select="if (@xtrf) then relpath:getParent(@xtrf) else relpath:getParent(document-uri(root(.)))" as="xs:string"/>
@@ -98,11 +99,11 @@
     <xsl:param name="debug" as="xs:boolean" tunnel="yes" select="false()"/>
     
     <xsl:if test="$debug and contains(@class, ' map/topicref ')">
-      <xsl:message>+ [DEBUG] bos_construction: Fallback template - <xsl:value-of select="concat(name(..), '/', name(.))"/></xsl:message>
+      <xsl:message>+ [DEBUG] bos_construction: Fallback template - {name(..) || '/' || name(.)}</xsl:message>
       <xsl:if test="contains(@class, ' map/topicref ')">
-        <xsl:message>+ [DEBUG]                     href="<xsl:value-of select="@href"/>"</xsl:message>
-        <xsl:message>+ [DEBUG]                     scope="<xsl:value-of select="@scope"/>"</xsl:message>
-        <xsl:message>+ [DEBUG]                     format="<xsl:value-of select="@format"/>"</xsl:message>
+        <xsl:message>+ [DEBUG]                     href="{@href}"</xsl:message>
+        <xsl:message>+ [DEBUG]                     scope="{@scope}"</xsl:message>
+        <xsl:message>+ [DEBUG]                     format="{@format}"</xsl:message>
       </xsl:if>
     </xsl:if>
     <xsl:apply-templates mode="#current"/>

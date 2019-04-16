@@ -3,7 +3,9 @@
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl"
   exclude-result-prefixes="xs xd"
-  version="2.0">
+  version="3.0"
+  expand-text="yes"
+  >
   
   <!-- Common imports and supporting code for D4P HTML transformation type extensions (not 
        standalone transformation types. 

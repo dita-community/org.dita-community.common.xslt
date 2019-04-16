@@ -2,16 +2,21 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
       xmlns:xs="http://www.w3.org/2001/XMLSchema"
       exclude-result-prefixes="xs"
-      version="2.0">
+      version="3.0"
+      expand-text="yes"
+  >
+  
+  <xsl:import href="../xsl/dita-support-lib.xsl"/>
+  <xsl:import href="../xsl/relpath_util.xsl"/>  
   
   <xsl:output indent="yes"
-    doctype-public="urn:pubid:astd.com/doctypes/dita/bookpub"
+    doctype-public="urn:pubid:example.org/doctypes/dita/bookpub"
     doctype-system="bookpub.dtd"
   />
   
   <xsl:variable name="debugBoolean" select="true()" as="xs:boolean"/>
   
-  <xsl:include href="resolve-map.xsl"/>
+  <xsl:include href="../xsl/resolve-map.xsl"/>
   
   <xsl:template match="/">
     <xsl:variable name="resolvedMap" as="element()">

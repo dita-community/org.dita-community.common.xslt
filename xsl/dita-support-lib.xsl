@@ -43,8 +43,25 @@
   <!-- List of base types that are inherently blocks. Include %basic.block as
        well as other elements that are also normally or always presented as
        blocks (e.g., shortdesc) -->
-  <xsl:variable name="baseBlockTypes"
-    select="'^dl^fig^image^lines^lq^note^object^ol^p^pre^simpletable^sl^table^ul^shortdesc^'"
+  <xsl:variable name="baseBlockTypes" as="xs:string+"
+    select="
+    (
+     'topic/dl', 
+     'topic/fig', 
+     'topic/image', 
+     'topic/lines', 
+     'topic/lq', 
+     'topic/note', 
+     'topic/object', 
+     'topic/ol', 
+     'topic/p', 
+     'topic/pre', 
+     'topic/simpletable', 
+     'topic/sl', 
+     'topic/table', 
+     'topic/ul', 
+     'topic/shortdesc'
+    )"
   />
 
   <xsl:template name="resolve-mapref">
@@ -610,38 +627,20 @@
 
   <xsl:function name="df:hasBlockChildren" as="xs:boolean">
     <xsl:param name="context" as="element()"/>
-    <xsl:sequence select="boolean($context[
-      *[df:class(., 'topic/p')] |
-      *[df:class(., 'topic/ol')] |
-      *[df:class(., 'topic/ul')] |
-      *[df:class(., 'topic/sl')] |
-      *[df:class(., 'topic/example')] |
-      *[df:class(., 'topic/fig')] |
-      *[df:class(., 'topic/figgroup')] |
-      *[df:class(., 'topic/lines')] |
-      *[df:class(., 'topic/note')] |
-      *[df:class(., 'topic/pre')] |
-      *[df:class(., 'topic/simpletable')] |
-      *[df:class(., 'topic/table')]
-      ])"/>
+    <xsl:sequence 
+      select="exists($context/*[df:isBlock(.)])"
+    />
   </xsl:function>
 
   <xsl:function name="df:isBlock" as="xs:boolean">
     <xsl:param name="context" as="element()"/>
-    <xsl:variable name="result" as="xs:boolean">
-      <xsl:choose>
-          <xsl:when test="contains($context/@class, ' topic/')">
-            <xsl:variable name="baseType"
-              select="substring-after(tokenize($context/@class, ' ')[2], '/')"
-            />
-            <xsl:sequence
-              select="contains($baseBlockTypes, concat('^',$baseType, '^'))"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:sequence select="false()"/>
-          </xsl:otherwise>
-        </xsl:choose>
-    </xsl:variable>
+    <xsl:variable name="result" as="xs:boolean"
+      select="
+      if (contains($context/@class, ' topic/'))
+      then (tokenize($context/@class, '\s+') = $baseBlockTypes)
+      else false()
+      "
+    />
     <xsl:sequence select="$result"/>
   </xsl:function>
 
@@ -1322,7 +1321,35 @@
     </xsl:function>
 
    <xsl:function name="df:isInline" as="xs:boolean">
-      <xsl:param name="elem"/>
+     <xsl:param name="elem" as="element()"/>
+     <xsl:variable name="classTokens" as="xs:string+"
+       select="tokenize($elem/@class, '\s+')[position() gt 1]"
+     />
+     <xsl:variable name="inlineTypes" as="xs:string+"
+       select="
+         'topic/ph',
+         'topic/indexterm',
+         'topic/keyword',
+         'topic/xref',
+         'topic/alt',
+         'topic/boolean',
+         'topic/cite',
+         'topic/data',
+         'topic/data-about',
+         'topic/draft-comment',
+         'topic/fn',
+         'topic/foreign',
+         'topic/image',
+         'topic/index-base',
+         'topic/indextermref',
+         'topic/q',
+         'topic/required-cleanup',
+         'topic/state',
+         'topic/term',
+         'topic/text',
+         'topic/tm',
+         'topic/unknown'"       
+     />
       <xsl:variable name="result" as="xs:boolean">
          <xsl:choose>
             <!-- Don't treat task/cmd as an inline even though it is a specializtion
@@ -1330,66 +1357,42 @@
             <xsl:when test="df:class($elem, 'task/cmd')">
                <xsl:value-of select="false()"/>
             </xsl:when>
-            <!-- Classes that are more likely to occur have been put near the front
-            so that the XSLT processor can exit the test sooner. Note that this function
-            will also match an element that is a specialization of any of these classes
-            (except for <cmd>). -->
-            <xsl:when
-               test="df:class($elem, 'topic/ph')
-               or df:class($elem, 'topic/indexterm')
-               or df:class($elem, 'topic/keyword')
-               or df:class($elem, 'topic/xref')
-               or df:class($elem, 'topic/alt')
-               or df:class($elem, 'topic/boolean')
-               or df:class($elem, 'topic/cite')
-               or df:class($elem, 'topic/data')
-               or df:class($elem, 'topic/data-about')
-               or df:class($elem, 'topic/draft-comment')
-               or df:class($elem, 'topic/fn')
-               or df:class($elem, 'topic/foreign')
-               or df:class($elem, 'topic/image')
-               or df:class($elem, 'topic/index-base')
-               or df:class($elem, 'topic/indextermref')
-               or df:class($elem, 'topic/q')
-               or df:class($elem, 'topic/required-cleanup')
-               or df:class($elem, 'topic/state')
-               or df:class($elem, 'topic/term')
-               or df:class($elem, 'topic/text')
-               or df:class($elem, 'topic/tm')
-               or df:class($elem, 'topic/unknown')">
-               <xsl:value-of select="true()"/>
-            </xsl:when>
             <xsl:otherwise>
-               <xsl:value-of select="false()"/>
+              <xsl:sequence select="$classTokens = $inlineTypes"/>
             </xsl:otherwise>
          </xsl:choose>
       </xsl:variable>
       <xsl:sequence select="$result"/>
    </xsl:function>
 
-
    <!-- RESTRICTION: These elements must allow <p> as a child element. -->
    <!-- Note that this function will also match an element that is a
         specialization of any of these classes -->
    <xsl:function name="df:isWrapMixed" as="xs:boolean">
       <xsl:param name="elem"/>
+     <xsl:variable name="classTokens" as="xs:string+"
+       select="tokenize($elem/@class, '\s+')[position() gt 1]"
+     />     
       <xsl:variable name="result"
-         select="
-         df:class($elem, 'topic/abstract') or
-         df:class($elem, 'topic/bodydiv') or
-         df:class($elem, 'topic/dd') or
-         df:class($elem, 'topic/entry') or
-         df:class($elem, 'topic/example') or
-         df:class($elem, 'topic/itemgroup') or
-         df:class($elem, 'topic/li') or
-         df:class($elem, 'topic/lines') or
-         df:class($elem, 'topic/lq') or
-         df:class($elem, 'topic/note') or
-         df:class($elem, 'topic/section') or
-         df:class($elem, 'topic/sectiondiv') or
-         df:class($elem, 'topic/stentry')
+         select="$classTokens =
+         (
+           'topic/abstract',
+           'topic/bodydiv',
+           'topic/dd',
+           'topic/entry',
+           'topic/example',
+           'topic/itemgroup',
+           'topic/li',
+           'topic/lines',
+           'topic/lq',
+           'topic/note',
+           'topic/section',
+           'topic/sectiondiv',
+           'topic/stentry'
+           )
          "
-         as="xs:boolean"/>
+         as="xs:boolean"
+      />
       <xsl:sequence select="$result"/>
    </xsl:function>
 
