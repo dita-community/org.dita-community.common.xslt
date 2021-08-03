@@ -396,7 +396,7 @@
          component of the path.
     -->
     <xsl:param name="sourcePath" as="xs:string"/>
-    <xsl:value-of select="tokenize($sourcePath, '/')[last()]"/>
+    <xsl:value-of select="tokenize(replace($sourcePath, '\\', '/'), '/')[last()]"/>
   </xsl:function>
   
   <xd:doc xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl">
@@ -453,7 +453,7 @@
   </xd:doc>
   <xsl:function name="relpath:getParent" as="xs:string">
     <xsl:param name="sourcePath" as="xs:string"/>
-    <xsl:value-of select="string-join(tokenize($sourcePath, '/')[position() &lt; last()], '/')"/>
+    <xsl:value-of select="string-join(tokenize(replace($sourcePath, '\\', '/'), '/')[position() &lt; last()], '/')"/>
   </xsl:function>
   
   <xd:doc xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl">
